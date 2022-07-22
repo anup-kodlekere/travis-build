@@ -23,8 +23,15 @@ module Travis
 
             sh.if "-z $(command -v tmate)" do
               sh.if "$(uname) = 'Linux'" do
-                sh.cmd "wget -q -O tmate.tar.xz #{static_build_linux_url}", echo: false, retry: true
-                sh.cmd "tar --strip-components=1 -xf tmate.tar.xz", echo: false
+                sh.if "$(uname -m) = 'ppc64le'" do
+                  sh.echo "We are setting up the debug environment. This may take a while..."
+                  sh.cmd "apt-get update &> /dev/null", echo: false, retry: true
+                  sh.cmd "apt-get install tmate -y &> /dev/null", echo: false, retry: true
+                end
+                sh.else do
+                  sh.cmd "wget -q -O tmate.tar.xz #{static_build_linux_url}", echo: false, retry: true
+                  sh.cmd "tar --strip-components=1 -xf tmate.tar.xz", echo: false
+                end  
               end
               sh.else do
                 sh.echo "We are setting up the debug environment. This may take a while..."
